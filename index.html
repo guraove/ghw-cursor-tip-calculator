@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tip Calculator</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e8edf4;
+      --muted: #8b9cb3;
+      --accent: #3d9cf5;
+      --accent-dim: #2a7bc4;
+      --success: #4ade80;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 1.25rem;
+    }
+
+    main {
+      max-width: 28rem;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0 0 1.5rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    input[type="number"]:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-color: var(--accent);
+    }
+
+  input[type="number"]:invalid:not(:focus):not(:placeholder-shown) {
+      border-color: #f87171;
+    }
+
+    .tip-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .tip-presets button {
+      flex: 1 1 auto;
+      min-width: 3.5rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .tip-presets button:hover,
+    .tip-presets button:focus-visible {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .tip-presets button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .reset-btn {
+      margin-top: 0.25rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .reset-btn:hover,
+    .reset-btn:focus-visible {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .results {
+      margin-top: 0.5rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .results h2 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin: 0 0 1rem;
+    }
+
+    dl {
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+  .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+    }
+
+    dt {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 1.1rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .row--emphasis dd {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    @media (min-width: 480px) {
+      body {
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Tip Calculator</h1>
+    <p class="subtitle">Split the bill and see what each person owes.</p>
+
+    <form id="calc" novalidate>
+      <div class="field">
+        <label for="bill">Bill amount</label>
+        <span id="bill-hint" class="hint">Enter the total before tip, in dollars.</span>
+        <input
+          id="bill"
+          name="bill"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          value="50"
+          required
+          aria-describedby="bill-hint"
+        >
+      </div>
+
+      <div class="field">
+        <label for="tip">Tip percentage</label>
+        <span id="tip-hint" class="hint">Custom tip or pick a preset.</span>
+        <input
+          id="tip"
+          name="tip"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          max="100"
+          step="0.5"
+          value="18"
+          required
+          aria-describedby="tip-hint"
+        >
+        <div class="tip-presets" role="group" aria-label="Tip percentage presets">
+          <button type="button" data-tip="15" aria-pressed="false">15%</button>
+          <button type="button" data-tip="18" aria-pressed="true">18%</button>
+          <button type="button" data-tip="20" aria-pressed="false">20%</button>
+          <button type="button" data-tip="25" aria-pressed="false">25%</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="party">Party size</label>
+        <span id="party-hint" class="hint">How many people are splitting the bill?</span>
+        <input
+          id="party"
+          name="party"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          step="1"
+          value="2"
+          required
+          aria-describedby="party-hint"
+        >
+      </div>
+
+      <button
+        type="button"
+        id="reset"
+        class="reset-btn"
+        aria-describedby="reset-hint"
+      >
+        Reset to defaults
+      </button>
+      <span id="reset-hint" class="hint">Restore bill $50, tip 18%, and party of 2.</span>
+    </form>
+
+    <section class="results" aria-live="polite" aria-atomic="true">
+      <h2 id="results-heading">Summary</h2>
+      <dl aria-labelledby="results-heading">
+        <div class="row">
+          <dt>Tip amount</dt>
+          <dd id="out-tip">$9.00</dd>
+        </div>
+        <div class="row">
+          <dt>Total with tip</dt>
+          <dd id="out-total">$59.00</dd>
+        </div>
+        <div class="row row--emphasis">
+          <dt>Per person</dt>
+          <dd id="out-per-person">$29.50</dd>
+        </div>
+      </dl>
+    </section>
+  </main>
+
+  <script>
+    const billEl = document.getElementById("bill");
+    const tipEl = document.getElementById("tip");
+    const partyEl = document.getElementById("party");
+    const outTip = document.getElementById("out-tip");
+    const outTotal = document.getElementById("out-total");
+    const outPerPerson = document.getElementById("out-per-person");
+    const presets = document.querySelectorAll(".tip-presets button");
+    const resetEl = document.getElementById("reset");
+
+    const DEFAULTS = { bill: "50", tip: "18", party: "2" };
+
+    function formatMoney(n) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(n);
+    }
+
+    function readPositive(value, fallback) {
+      const n = Number.parseFloat(value);
+      if (Number.isNaN(n) || n < 0) return fallback;
+      return n;
+    }
+
+    function readParty(value) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n) || n < 1) return 1;
+      return n;
+    }
+
+    function syncPresetButtons() {
+      const tip = Number.parseFloat(tipEl.value);
+      presets.forEach((btn) => {
+        const pressed = Number(btn.dataset.tip) === tip;
+        btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+      });
+    }
+
+    function update() {
+      const bill = readPositive(billEl.value, 0);
+      const tipPct = readPositive(tipEl.value, 0);
+      const party = readParty(partyEl.value);
+
+      const tipAmount = bill * (tipPct / 100);
+      const total = bill + tipAmount;
+      const perPerson = party > 0 ? total / party : total;
+
+      outTip.textContent = formatMoney(tipAmount);
+      outTotal.textContent = formatMoney(total);
+      outPerPerson.textContent = formatMoney(perPerson);
+
+      syncPresetButtons();
+    }
+
+    document.getElementById("calc").addEventListener("input", update);
+
+    presets.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        tipEl.value = btn.dataset.tip;
+        update();
+      });
+    });
+
+    function resetToDefaults() {
+      billEl.value = DEFAULTS.bill;
+      tipEl.value = DEFAULTS.tip;
+      partyEl.value = DEFAULTS.party;
+      update();
+      billEl.focus();
+    }
+
+    resetEl.addEventListener("click", resetToDefaults);
+
+    update();
+  </script>
+</body>
+</html>
+
